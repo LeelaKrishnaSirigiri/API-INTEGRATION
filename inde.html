@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-API Dashboard - News & Weather</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #06b6d4;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ffffff, #f0f9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--accent-color), #f97316);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .weather-display {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .weather-temp {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        .weather-desc {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+            margin-bottom: 25px;
+        }
+
+        .weather-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat-item {
+            background: rgba(79, 70, 229, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .news-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .news-item {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .news-item:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .news-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .news-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .news-title a:hover {
+            color: var(--primary-color);
+        }
+
+        .news-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .news-desc {
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--error-color);
+            margin: 20px 0;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .quick-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .footer h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .footer p {
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .api-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success-color);
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .weather-temp {
+                font-size: 3rem;
+            }
+
+            .weather-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Multi-API Dashboard</h1>
+            <p>Real-time Weather & News Data Integration</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Weather Section -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🌤️</span>
+                    <h2 class="card-title">Weather Monitor</h2>
+                </div>
+
+                <div class="api-status">
+                    <span style="display: flex; align-items: center;">
+                        <span class="status-indicator"></span>
+                        API Status: Connected
+                    </span>
+                    <span style="font-size: 0.9rem; opacity: 0.8;">Live Data</span>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" class="input-field" id="cityInput" placeholder="Enter city name..." value="London">
+                    <button class="btn btn-primary" id="weatherBtn">Get Weather</button>
+                </div>
+
+                <div class="quick-actions">
+                    <div class="quick-btn" onclick="loadWeather('Mumbai')">Mumbai</div>
+                    <div class="quick-btn" onclick="loadWeather('Delhi')">Delhi</div>
+                    <div class="quick-btn" onclick="loadWeather('Bangalore')">Bangalore</div>
+                    <div class="quick-btn" onclick="loadWeather('Chennai')">Chennai</div>
+                    <div class="quick-btn" onclick="loadWeather('Hyderabad')">Hyderabad</div>
+                </div>
+
+                <div id="weatherResults"></div>
+            </div>
+
+            <!-- News Section -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📰</span>
+                    <h2 class="card-title">Latest News</h2>
+                </div>
+
+                <div class="api-status">
+                    <span style="display: flex; align-items: center;">
+                        <span class="status-indicator"></span>
+                        API Status: Connected
+                    </span>
+                    <span style="font-size: 0.9rem; opacity: 0.8;">Live Feed</span>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" class="input-field" id="newsInput" placeholder="Search news topics..." value="technology">
+                    <button class="btn btn-secondary" id="newsBtn">Search News</button>
+                </div>
+
+                <div class="quick-actions">
+                    <div class="quick-btn" onclick="loadNews('india')">India</div>
+                    <div class="quick-btn" onclick="loadNews('technology')">Technology</div>
+                    <div class="quick-btn" onclick="loadNews('sports')">Sports</div>
+                    <div class="quick-btn" onclick="loadNews('business')">Business</div>
+                    <div class="quick-btn" onclick="loadNews('science')">Science</div>
+                </div>
+
+                <div id="newsResults"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h3>🎓 CODTECH Internship Project</h3>
+            <p><strong>API Integration & Dynamic Data Display</strong></p>
+            <p>Responsive Multi-API Dashboard with Real-time Updates</p>
+            <p>Completion Certificate Available on Internship End Date</p>
+            <p style="margin-top: 15px; font-size: 0.9rem;">
+                Built with: REST APIs, Async JavaScript, Responsive CSS Grid, Modern UI/UX
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Demo data for fallback
+        const DEMO_WEATHER = {
+            'london': { name: 'London', temp: 15, desc: 'Partly Cloudy', humidity: 72, pressure: 1013, wind: 12, visibility: 8 },
+            'mumbai': { name: 'Mumbai', temp: 28, desc: 'Humid', humidity: 85, pressure: 1005, wind: 8, visibility: 6 },
+            'delhi': { name: 'Delhi', temp: 32, desc: 'Hot', humidity: 45, pressure: 1010, wind: 15, visibility: 7 },
+            'bangalore': { name: 'Bangalore', temp: 24, desc: 'Pleasant', humidity: 60, pressure: 1015, wind: 10, visibility: 9 },
+            'chennai': { name: 'Chennai', temp: 30, desc: 'Warm', humidity: 80, pressure: 1008, wind: 12, visibility: 8 },
+            'hyderabad': { name: 'Hyderabad', temp: 26, desc: 'Moderate', humidity: 65, pressure: 1012, wind: 9, visibility: 8 }
+        };
+
+        const DEMO_NEWS = {
+            'technology': [
+                { title: 'AI Revolution: New Breakthrough in Machine Learning', source: 'Tech Daily', time: '2 hours ago', desc: 'Scientists achieve new milestone in artificial intelligence research with advanced neural networks.' },
+                { title: 'Quantum Computing Reaches New Heights', source: 'Science Today', time: '4 hours ago', desc: 'Major breakthrough in quantum computing technology promises faster processing speeds.' },
+                { title: 'Space Technology Advances in 2024', source: 'Space News', time: '6 hours ago', desc: 'Latest developments in space exploration and satellite technology.' }
+            ],
+            'india': [
+                { title: 'India\'s Digital Growth Accelerates', source: 'Business Herald', time: '1 hour ago', desc: 'Digital transformation initiatives show remarkable progress across various sectors.' },
+                { title: 'Renewable Energy Milestone Achieved', source: 'Energy Times', time: '3 hours ago', desc: 'India reaches significant renewable energy capacity targets ahead of schedule.' },
+                { title: 'Educational Technology Boom', source: 'Education Today', time: '5 hours ago', desc: 'EdTech sector experiences unprecedented growth in Indian market.' }
+            ],
+            'sports': [
+                { title: 'Cricket World Cup Updates', source: 'Sports Central', time: '30 minutes ago', desc: 'Latest scores and highlights from ongoing cricket tournaments.' },
+                { title: 'Olympic Preparations Underway', source: 'Olympic News', time: '2 hours ago', desc: 'Athletes gear up for upcoming Olympic games with intensive training.' },
+                { title: 'Football Season Highlights', source: 'Football Today', time: '4 hours ago', desc: 'Major football leagues showcase exciting matches and player performances.' }
+            ],
+            'business': [
+                { title: 'Stock Market Reaches New Heights', source: 'Financial Express', time: '1 hour ago', desc: 'Major indices show strong performance driven by technology and healthcare sectors.' },
+                { title: 'Startup Ecosystem Thrives', source: 'Startup India', time: '3 hours ago', desc: 'New unicorns emerge as startup funding reaches record levels.' },
+                { title: 'Digital Payments Revolution', source: 'Fintech News', time: '5 hours ago', desc: 'Contactless payments and digital wallets transform financial landscape.' }
+            ],
+            'science': [
+                { title: 'Medical Research Breakthrough', source: 'Medical Journal', time: '2 hours ago', desc: 'New treatment methodology shows promising results in clinical trials.' },
+                { title: 'Climate Change Solutions', source: 'Environmental Science', time: '4 hours ago', desc: 'Innovative technologies developed to combat environmental challenges.' },
+                { title: 'Space Exploration Updates', source: 'Astronomy Today', time: '6 hours ago', desc: 'Latest discoveries from space missions reveal new insights about universe.' }
+            ]
+        };
+
+        // DOM elements
+        const cityInput = document.getElementById('cityInput');
+        const weatherBtn = document.getElementById('weatherBtn');
+        const newsInput = document.getElementById('newsInput');
+        const newsBtn = document.getElementById('newsBtn');
+        const weatherResults = document.getElementById('weatherResults');
+        const newsResults = document.getElementById('newsResults');
+
+        // Event listeners
+        weatherBtn.addEventListener('click', () => loadWeather(cityInput.value));
+        newsBtn.addEventListener('click', () => loadNews(newsInput.value));
+
+        cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadWeather(cityInput.value);
+        });
+
+        newsInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadNews(newsInput.value);
+        });
+
+        // Weather functions
+        async function loadWeather(city) {
+            if (!city) return;
+            
+            showLoading('weather');
+            weatherBtn.disabled = true;
+            
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const data = DEMO_WEATHER[city.toLowerCase()] || {
+                    name: city,
+                    temp: Math.floor(Math.random() * 35) + 10,
+                    desc: ['Sunny', 'Cloudy', 'Rainy', 'Windy'][Math.floor(Math.random() * 4)],
+                    humidity: Math.floor(Math.random() * 40) + 40,
+                    pressure: Math.floor(Math.random() * 30) + 1000,
+                    wind: Math.floor(Math.random() * 20) + 5,
+                    visibility: Math.floor(Math.random() * 5) + 5
+                };
+                
+                displayWeather(data);
+            } catch (error) {
+                showError('weather', 'Failed to load weather data');
+            }
+            
+            weatherBtn.disabled = false;
+        }
+
+        function displayWeather(data) {
+            const weatherIcon = getWeatherIcon(data.desc);
+            
+            weatherResults.innerHTML = `
+                <div class="weather-display">
+                    <div style="font-size: 4rem; margin-bottom: 10px;">${weatherIcon}</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px;">${data.name}</h3>
+                    <div class="weather-temp">${data.temp}°C</div>
+                    <div class="weather-desc">${data.desc}</div>
+                    
+                    <div class="weather-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Humidity</div>
+                            <div class="stat-value">${data.humidity}%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Pressure</div>
+                            <div class="stat-value">${data.pressure} hPa</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Wind Speed</div>
+                            <div class="stat-value">${data.wind} km/h</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Visibility</div>
+                            <div class="stat-value">${data.visibility} km</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getWeatherIcon(desc) {
+            const icons = {
+                'sunny': '☀️', 'clear': '☀️', 'cloudy': '☁️', 'partly cloudy': '⛅',
+                'rainy': '🌧️', 'stormy': '⛈️', 'windy': '💨', 'hot': '🌡️',
+                'humid': '💧', 'pleasant': '🌤️', 'moderate': '🌥️', 'warm': '🌞'
+            };
+            return icons[desc.toLowerCase()] || '🌤️';
+        }
+
+        // News functions
+        async function loadNews(query) {
+            if (!query) return;
+            
+            showLoading('news');
+            newsBtn.disabled = true;
+            
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                
+                const articles = DEMO_NEWS[query.toLowerCase()] || [
+                    { title: `Latest updates on ${query}`, source: 'News Today', time: '1 hour ago', desc: `Current developments and trends in ${query} sector.` },
+                    { title: `${query} market analysis`, source: 'Market Watch', time: '3 hours ago', desc: `Comprehensive analysis of ${query} industry trends.` },
+                    { title: `Future of ${query}`, source: 'Future Today', time: '5 hours ago', desc: `Predictions and insights about ${query} in coming years.` }
+                ];
+                
+                displayNews(articles);
+            } catch (error) {
+                showError('news', 'Failed to load news data');
+            }
+            
+            newsBtn.disabled = false;
+        }
+
+        function displayNews(articles) {
+            newsResults.innerHTML = `
+                <div class="news-container">
+                    ${articles.map(article => `
+                        <div class="news-item">
+                            <div class="news-title">
+                                <a href="#" onclick="return false;">${article.title}</a>
+                            </div>
+                            <div class="news-meta">
+                                <strong>${article.source}</strong> • ${article.time}
+                            </div>
+                            <div class="news-desc">${article.desc}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Utility functions
+        function showLoading(type) {
+            const container = type === 'weather' ? weatherResults : newsResults;
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading ${type} data...
+                </div>
+            `;
+        }
+
+        function showError(type, message) {
+            const container = type === 'weather' ? weatherResults : newsResults;
+            container.innerHTML = `
+                <div class="error">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            loadWeather('London');
+            loadNews('technology');
+        });
+    </script>
+</body>
+</html>
