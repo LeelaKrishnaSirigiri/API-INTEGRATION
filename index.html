@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📰 News Dashboard</h1>
+            <p>Latest headlines from around the world</p>
+        </header>
+
+        <div class="controls">
+            <select id="categorySelect" class="category-select">
+                <option value="general">General</option>
+                <option value="business">Business</option>
+                <option value="technology">Technology</option>
+                <option value="science">Science</option>
+                <option value="health">Health</option>
+                <option value="sports">Sports</option>
+                <option value="entertainment">Entertainment</option>
+            </select>
+            <button id="refreshBtn" class="refresh-btn">🔄 Refresh</button>
+        </div>
+
+        <div id="loadingSpinner" class="loading">
+            <div class="spinner"></div>
+            <p>Loading news...</p>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <p>❌ Failed to load news. Please try again later.</p>
+        </div>
+
+        <div id="newsContainer" class="news-container">
+            <!-- News articles will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
