@@ -13,3 +13,6 @@
 *MENTOR*:  NEELA SANTHOSH
 
 
+#OUTPUT
+
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/21cd0617-bcde-42e7-86ae-19de377153e6" />
