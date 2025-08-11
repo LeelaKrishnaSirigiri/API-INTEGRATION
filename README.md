@@ -1,6 +1,6 @@
 # API-INTEGRATION
 
-*COMPANY*:  CODETECH IT SOLUTIONS
+*COMPANY*:  CODTECH IT SOLUTIONS
 
 *NAME*:  SIRIGIRI LEELA KRISHNA REDDY
 
@@ -11,6 +11,8 @@
 *DURATION*:  6 WEEKS
 
 *MENTOR*:  NEELA SANTHOSH
+
+
 News Web Application – Project Description
 The News Web Application is a responsive and interactive website that fetches and displays real-time news articles from a public news API such as NewsAPI.org. This project showcases how to integrate third-party RESTful APIs into a web application using modern web technologies like HTML5, CSS3, and JavaScript (ES6+). The goal of the application is to allow users to access the latest news headlines from various categories, sources, and countries—all in one user-friendly interface.
 
